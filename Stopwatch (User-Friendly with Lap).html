@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stopwatch</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    .stopwatch {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .time {
+      font-size: 4rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .lap-times {
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 1rem;
+    }
+
+    .lap-time {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    class Stopwatch extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          time: 0,
+          isRunning: false,
+          lapTimes: [],
+        };
+      }
+
+      handleStart = () => {
+        this.interval = setInterval(() => {
+          this.setState((prevState) => ({
+            time: prevState.time + 10,
+          }));
+        }, 10);
+        this.setState({ isRunning: true });
+      };
+
+      handleStop = () => {
+        clearInterval(this.interval);
+        this.setState({ isRunning: false });
+      };
+
+      handleReset = () => {
+        clearInterval(this.interval);
+        this.setState({ time: 0, isRunning: false, lapTimes: [] });
+      };
+
+      handleLap = () => {
+        this.setState((prevState) => ({
+          lapTimes: [...prevState.lapTimes, prevState.time],
+        }));
+      };
+
+      formatTime = (time) => {
+        const milliseconds = time % 1000;
+        const seconds = Math.floor((time / 1000) % 60);
+        const minutes = Math.floor((time / (1000 * 60)) % 60);
+        const hours = Math.floor((time / (1000 * 60 * 60)) % 24);
+
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+      };
+
+      renderLapTimes = () => {
+        return this.state.lapTimes.map((lapTime, index) => (
+          <div key={index} className="lap-time">
+            Lap {index + 1}: {this.formatTime(lapTime)}
+          </div>
+        ));
+      };
+
+      render() {
+        return (
+          <div className="stopwatch">
+            <h1>Stopwatch</h1>
+            <div className="time">{this.formatTime(this.state.time)}</div>
+            <div className="buttons">
+              {!this.state.isRunning && (
+                <button onClick={this.handleStart}>Start</button>
+              )}
+              {this.state.isRunning && (
+                <button onClick={this.handleStop}>Stop</button>
+              )}
+              <button onClick={this.handleLap}>Lap</button>
+              <button onClick={this.handleReset}>Reset</button>
+            </div>
+            {this.state.lapTimes.length > 0 && (
+              <div className="lap-times">
+                <h3>Lap Times</h3>
+                {this.renderLapTimes()}
+              </div>
+            )}
+          </div>
+        );
+      }
+    }
+
+    ReactDOM.render(<Stopwatch />, document.getElementById('root'));
+  </script>
+</body>
+</html>
